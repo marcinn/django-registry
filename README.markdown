@@ -32,9 +32,12 @@ By simple dict-like interface you can access application settings now:
     print my_app_config.get('default_thumbnail_width', 110)
     print my_app_config.get('default_thumbnail_height', 80)
 
-It is equivalent for accessing:
+
+It is an equivalent for accessing:
+
   - application_name.global_config.default_thumbnail_width
   - and application_name.global_config.default_thumbnail_height
+
 
 Registry configuration instances are lazy (loaded after first access).
 They are refreshed after every registry data change, but only
