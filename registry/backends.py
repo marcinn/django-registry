@@ -23,7 +23,7 @@ class InMemoryBackend(object):
         """
         return self._data.get(key,{}) if key else self._data
     
-    def write(self, config):
+    def write(self, key, config):
         """
         write config (update) to storage
         """
@@ -54,7 +54,7 @@ class DatabaseBackend(object):
         return dict([(entry.key, entry.value) for \
                 entry in models.Entry.objects.all()])
 
-    def write(self, config):
+    def write(self, key, config):
         """
         writes config to database
         config must be an instance of RegistryConfig class
@@ -69,6 +69,18 @@ class DatabaseBackend(object):
         if opts.has_key('instance'):
             if opts['instance'].key.startswith(self.registry_config.key):
                 self.registry_config.reload()
+
+
+class ModelBackend(object):
+    """
+    Registry storage for model instance
+    """
+
+    def read(self, key):
+        return models.ModelEntry.objects.get_for_model(key)
+
+    def write(self, key, config):
+        models.ModelEntry.objects.update_for_model(key, config)
 
 
 def get_backend(import_path):
