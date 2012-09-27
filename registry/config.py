@@ -6,7 +6,7 @@ import models
 import backends
 
 
-class RegistryConfig(dict):
+class RegistryConfig(object):
     """
     registry configuration storage class
     """
@@ -17,29 +17,38 @@ class RegistryConfig(dict):
         self.key = key
         backend_class = backend_class or backends.InMemoryBackend
         self.backend = backend_class(self)
+        self.clear()
 
         # lazy loading config is designed to 
         # avoid circullar import loop in django magic modules loading
         self.is_loaded = False
+
+    def __getitem__(self, key):
+        return self.get(key)
+
+    def clear(self):
+        self._data = {}
 
     def get(self, key, d=None):
         """
         accessor for configuration
         lazy loads data
         """
-        if not self.is_loaded and hasattr(self, 'reload'):
+        if not self.is_loaded:
             self.reload()
 
         if self.key:
-            return super(RegistryConfig, self).get('%s.%s' % (self.key, key), d)
-        return super(RegistryConfig, self).get(key,d)
+            real_key = '.'.join([self.key, key])
+        else:
+            real_key = key
+        return self._data.get(real_key, d)
 
     def reload(self):
         """
         reloads data form Registry using owned backend
         """
         self.clear()
-        self.update(self.backend.read(self.key))
+        self._data = self.backend.read(self.key)
         self.is_loaded = True
 
 
